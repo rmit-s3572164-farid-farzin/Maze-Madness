@@ -1,4 +1,7 @@
 package maze;
+
+import java.util.Objects;
+
 /**
  * 
  * @author Youhan Xia
@@ -50,5 +53,26 @@ public class Cell {
 	public Cell() {
 		this(0, 0);
 	} // end of Cell()
+        
+        @Override
+        public boolean equals(Object other) {
+            if(other == null) return false;
+            if(!(other instanceof Cell)) return false;
+            Cell otherCell = (Cell)other;
+            if (otherCell.r == this.r && otherCell.c == this.c) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        
+        @Override
+        public int hashCode() {
+            int result = 17;
+            result = 31 * result + this.r;
+            result = 31 * result + this.c;
+            return result;
+        }
 	
 } // end of class Cell
