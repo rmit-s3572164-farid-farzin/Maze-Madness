@@ -29,12 +29,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		// TODO Auto-generated method stub
 		mazeCSize = maze.sizeR;
 		mazeRSize = maze.sizeC;
-//		if(maze.type==maze.HEX){
-//			mazeSize =mazeRSize*(mazeCSize + (mazeRSize + 1) / 2);
-//		}
-//		else{
-			mazeSize =mazeRSize*mazeCSize;
-		//}
+		mazeSize =mazeRSize*mazeCSize;
 		visited = new boolean[mazeRSize][mazeCSize];
 
 		//pick a starting cell
@@ -99,10 +94,8 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	}
 
 	private Cell pickUnvisitedNeighbour(Cell cell){
-//		System.out.println("All visited: "+allVisited+",Stack size:"+stack.size());
 
 			int cellTotalNeighs = cell.neigh.length;
-			//Cell neighbour=null;
 			int[] unvisitedneighbours=new int[cellTotalNeighs];
 			unVisitedNeighs=0;
 			try {
