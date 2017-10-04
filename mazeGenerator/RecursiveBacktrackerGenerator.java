@@ -18,6 +18,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	int direction;
 	int allVisited;
 	int mazeSize;
+	boolean endTrack;
 
 	@Override
 	public void generateMaze(Maze maze) {
@@ -28,38 +29,49 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		// TODO Auto-generated method stub
 		mazeCSize = maze.sizeR;
 		mazeRSize = maze.sizeC;
-		if(maze.type==maze.HEX){
-			visited = new boolean[mazeRSize][mazeCSize + (mazeRSize + 1) / 2];
-			mazeSize =mazeRSize*(mazeCSize + (mazeRSize + 1) / 2);
-		}
-		else{
-			visited = new boolean[mazeRSize][mazeCSize];
+//		if(maze.type==maze.HEX){
+//			mazeSize =mazeRSize*(mazeCSize + (mazeRSize + 1) / 2);
+//		}
+//		else{
 			mazeSize =mazeRSize*mazeCSize;
-		}
+		//}
+		visited = new boolean[mazeRSize][mazeCSize];
+
 		//pick a starting cell
 		Cell startingCell = pickStartingCell();
 		dfsr(startingCell);
+		
+
+			for(int j=0; j<mazeCSize;j++){
+				for(int i=0;i<mazeRSize;i++){
+				System.out.print(visited[i][j]+" ");
+			}
+			System.out.println();
+		}
 
 	} // end of generateMaze()
 
 	private void dfsr(Cell cell){
 		//pick a random unvisited cell
 		try {
-		Cell newVisitNeigh = cell;
-		Cell newNeighbour = pickUnvisitedNeighbour(newVisitNeigh);
-		while(newNeighbour!=null){
-			newVisitNeigh = newNeighbour;
-			newNeighbour = pickUnvisitedNeighbour(newVisitNeigh);
-
+		Cell visitNeigh = cell;
+		Cell newNeighbour = pickUnvisitedNeighbour(visitNeigh);
+		while(newNeighbour!=visitNeigh){
+			visitNeigh = newNeighbour;
+			newNeighbour = pickUnvisitedNeighbour(visitNeigh);
+			endTrack=false;
 		}
-		if(newNeighbour==null && !stack.isEmpty()){
+		if(newNeighbour==visitNeigh && !stack.isEmpty() && !endTrack){
+			stack.pop();
+			endTrack=true;
+		}
+		if(!stack.isEmpty())
 			cell = stack.pop();
-			if(!stack.isEmpty())
-				cell = stack.pop();
-		}
-		boolean perfecMaze = maze.isPerfect();
+		int stackSize = stack.size();
+		if(stackSize==1)
+			System.out.println();
 
-			if( allVisited<=mazeSize)
+			if( allVisited<mazeSize)
 				dfsr(cell);
 		} catch (Exception e) {
 			System.out.println(e);
@@ -74,42 +86,65 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 			c = new Random().nextInt(mazeCSize);
 			startCell = maze.map[r][c];
 		};
+		if(maze.type!=maze.HEX){
+
+		visited[startCell.r][startCell.c]=true;
+		}else{
+			visited[startCell.r][startCell.c-(startCell.r+1)/2]=true;
+		}
+		allVisited++;
+		System.out.println(startCell.r+", "+startCell.c);
+
 		return startCell;
 	}
 
 	private Cell pickUnvisitedNeighbour(Cell cell){
 //		System.out.println("All visited: "+allVisited+",Stack size:"+stack.size());
-		System.out.println(cell.r+", "+cell.c);
 
-			visited[cell.r][cell.c]=true;
-			stack.push(cell);
-			allVisited++;
 			int cellTotalNeighs = cell.neigh.length;
-			Cell neighbour=null;
+			//Cell neighbour=null;
 			int[] unvisitedneighbours=new int[cellTotalNeighs];
-			int count=0;
+			unVisitedNeighs=0;
 			try {
 			//Count number of not null neighbours and 
 			//set their index in an array
+				 
 			for(int i =0;i<cellTotalNeighs;i++){
+				if(maze.type!=maze.HEX){
 				if(cell.neigh[i]!=null && !visited[cell.neigh[i].r][cell.neigh[i].c]){
-					unvisitedneighbours[count]=i;
-					count++;
+					unvisitedneighbours[unVisitedNeighs]=i;
+					unVisitedNeighs++;
+				}
+				}else{
+					if(cell.neigh[i]!=null && !visited[cell.neigh[i].r][cell.neigh[i].c-(cell.neigh[i].r+1)/2]){
+						unvisitedneighbours[unVisitedNeighs]=i;
+						unVisitedNeighs++;
+					}
 				}
 			}
-			unVisitedNeighs = count;
 			//If there is any not null neighbour then pick one randomly
 			if(unVisitedNeighs!=0){
-				int index = new Random().nextInt(count);
+			
+				int index = new Random().nextInt(unVisitedNeighs);
 				direction = unvisitedneighbours[index];
-				neighbour=cell.neigh[direction];
 				maze.map[cell.r][cell.c].wall[direction].present=false;
+				cell=cell.neigh[direction];
+				System.out.println(cell.r+", "+cell.c);
+
+				if(maze.type!=maze.HEX){
+					visited[cell.r][cell.c]=true;
+				}else{
+					visited[cell.r][cell.c-(cell.r+1)/2]=true;
+				}
+
+				stack.push(cell);
+				allVisited++;
 			}
 		} catch (Exception e) {
 			System.out.println(e);
 			// TODO: handle exception
 		}
 
-		return neighbour;
+		return cell;
 	}
 } // end of class RecursiveBacktrackerGenerator
