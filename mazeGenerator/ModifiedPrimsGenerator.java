@@ -10,36 +10,53 @@ import static maze.Maze.deltaR;
 import static maze.Maze.oppoDir;
 import static maze.Maze.NUM_DIR;
 
+/**
+ * Generate a maze using a modified Prim's algorithm
+ * 
+ * @author s3586372 Rahul Raghavan
+ */
 public class ModifiedPrimsGenerator implements MazeGenerator {
 
+        /**
+         * Method to check if cell is within the maze
+         * @param maze
+         * @param r row index
+         * @param c column index
+         * @return 
+         */
         private boolean isIn(Maze maze, int r, int c) {
             return r >= 0 && r < maze.sizeR && c >= 0 && c < maze.sizeC;
         }
-	public HashSet<Cell> getNeighbours(Maze maze, Cell cell) {
-		HashSet<Cell> neighbours = new HashSet<>();
-                for (int j=0; j<NUM_DIR; j++) {
-                    if (isIn(maze, cell.r + deltaR[j], cell.c + deltaC[j])) {
-                        Cell neigh = maze.map[cell.r + deltaR[j]][cell.c + deltaC[j]];
-                        neighbours.add(neigh);
-                    }
-                }
-                return neighbours;
-	}
 
+        /**
+         * Method to generate the maze using Prim's
+         * @param maze 
+         * 
+         * Initiate/Setup Maze Generation:
+         * ===============================
+         * 1: Start with empty visited set
+         * 2: Add entrance to visited set
+         * 3: Add neighbours of entrance to frontier set
+         * 
+         * Generate Maze
+         * =============
+         * 4: Pick a cell in the frontier set at random
+         * 5: Pick a neighbour of the frontier set within the visited set
+         * 6: carve a path between the frontier set cell and the visited set cell
+         * 7: repeat 4-6 until the frontier set is empty
+         * 
+         */
 	@Override
 	public void generateMaze(Maze maze) {
-		// TODO Auto-generated method stub
-
 		// Create visited set
 		HashSet<Cell> visited = new HashSet<>();
 		// Create frontier set
 		HashSet<Cell> frontier = new HashSet<>();
-                // Create frontier set for random access
+                // Create duplicate frontier set for random access
                 LinkedList<Cell> frontierList = new LinkedList<>();
                 
                 // Add entrance to visited set
 		Cell entrance = maze.entrance;
-                System.out.println("entrance: " + "r: " + entrance.r + " c: " + entrance.c);
 		visited.add(entrance);
                 
                 // Add neighbours of entrance to frontier set
