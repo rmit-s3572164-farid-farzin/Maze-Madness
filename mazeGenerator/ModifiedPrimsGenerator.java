@@ -59,6 +59,13 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
 		Cell entrance = maze.entrance;
 		visited.add(entrance);
                 
+                // Carve a path from outside the maze to the entrance
+                for (int i=0; i<NUM_DIR; i++) {
+                    if (!isIn(maze, entrance.r + deltaR[i], entrance.c + deltaC[i]) && entrance.wall[i] != null && entrance.wall[i].present) {
+                        entrance.wall[i].present = false;
+                    }
+                }
+                
                 // Add neighbours of entrance to frontier set
                 for(Cell cell : entrance.neigh) {
                     // If cell is within the maze
@@ -78,16 +85,10 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
                     Random rand = new Random();
                     //Cell next = frontier.iterator().next();
                     Cell next = frontierList.get(rand.nextInt(frontier.size()));
-                    System.out.println("r: " + next.r + " c: " + next.c);
-                    System.out.println("frontier: ");
-                    for(Cell cell : frontierList) {
-                        System.out.print(","+cell.r+" "+cell.c+",");                        
-                    }
                     // Add neighbours of selected cell to frontier set
                     boolean carved = false;
                     for (int i=0; i<next.neigh.length; i++) {
                         if(next.neigh[i] != null) {
-                            System.out.println("r: " + next.neigh[i].r + " i: "+i + " c: " + next.neigh[i].c);
                             if (!visited.contains(next.neigh[i])) {
                                 if(!frontier.contains(next.neigh[i])) {
                                     frontier.add(next.neigh[i]);
