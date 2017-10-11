@@ -48,6 +48,12 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
          */
 	@Override
 	public void generateMaze(Maze maze) {
+                /**
+                 * Initiation Steps:
+                 * - Setup frontier set and visited set to compute Prim's
+                 * algorithm.
+                 * - Compute the algorithm for the first Cell - the entrance
+                 */
 		// Create visited set
 		HashSet<Cell> visited = new HashSet<>();
 		// Create frontier set
@@ -79,24 +85,45 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
                     }
                 }
 
-                // Build maze
+                /**
+                 * Maze Generation Steps:
+                 * - Run Prim's algorithm for all cells, while carving a path from
+                 * the current cell to the next (by removing the wall between
+                 * the cells)
+                 */
                 while(!frontier.isEmpty()) {
-                    // Select cell from frontier set
+                    // Select a random cell from frontier set
                     Random rand = new Random();
-                    //Cell next = frontier.iterator().next();
                     Cell next = frontierList.get(rand.nextInt(frontier.size()));
+                    
                     // Add neighbours of selected cell to frontier set
                     boolean carved = false;
+                    // Iterate through all neighbours of the selected cell
                     for (int i=0; i<next.neigh.length; i++) {
+                        // Check that the neighbour is valid and exists
                         if(next.neigh[i] != null) {
+                            /**
+                             * If the neighbour has not been visited before, add
+                             * it to the frontier set
+                             */                            
                             if (!visited.contains(next.neigh[i])) {
+                                // Check that the neighbour is not already in the frontier set
                                 if(!frontier.contains(next.neigh[i])) {
+                                    // Add the neighbour to the frontier set
                                     frontier.add(next.neigh[i]);
                                     frontierList.add(next.neigh[i]);                                    
                                 }
                             }
+                            /**
+                             * If the neighbour has been visited, carve a path 
+                             * to it
+                             **/
                             else {
-                                // Carve a path to create a new link in the maze
+                                /**
+                                 * Check if we have already carved a path from this cell
+                                 * - There should only be one oath out of a cell
+                                 * in order for the maze to be perfect.
+                                 */
                                 if (!carved) {
                                     next.wall[i].present = false;
                                     next.neigh[i].wall[oppoDir[i]].present = false;
@@ -105,6 +132,11 @@ public class ModifiedPrimsGenerator implements MazeGenerator {
                             }
                         }
                     }
+                    /**
+                     * If a path was successfully carved from the randomly 
+                     * selected cell to one of its neighbours - remove it from 
+                     * the frontier set and add it to the visited set.
+                     */
                     if (carved) {
                         frontier.remove(next);
                         frontierList.remove(next);
