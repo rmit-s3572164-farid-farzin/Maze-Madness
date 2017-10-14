@@ -103,6 +103,7 @@ public class WallFollowerSolver implements MazeSolver {
                                 // If the next cell is the exit - solver is complete
                                 // So add the exit to the necessary data structures
                                 if(currCell.equals(mazeExit)) {
+                                    maze.drawFtPrt(currCell);
                                     exploredCells.add(currCell);
                                     exploredPath.add(currCell);                                    
                                 }
