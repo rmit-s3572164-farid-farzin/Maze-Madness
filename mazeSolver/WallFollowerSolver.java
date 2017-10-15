@@ -17,8 +17,8 @@ public class WallFollowerSolver implements MazeSolver {
         // Stores the set of all explored cells
         private HashSet exploredCells = new HashSet<>();
 	
-        // Stores the path of cells travelled by the explorer
-        private LinkedList<Cell> exploredPath = new LinkedList<>();
+        // Is the maze solved
+        private boolean solved = false;
         // Store the entrance and exit of the maze to calculate isSolved
         private Cell mazeEntrance = null;
         private Cell mazeExit = null;
@@ -44,6 +44,8 @@ public class WallFollowerSolver implements MazeSolver {
             // Starting cell
             Cell currCell = maze.entrance;
             int entranceDir = -1;
+            // Boolean to check if current cell is a tunnel exit
+            boolean tunnelExit = false;
             
             // Iterate through all cells until the exit is reached
             while (currCell != maze.exit) {
@@ -51,7 +53,6 @@ public class WallFollowerSolver implements MazeSolver {
                 maze.drawFtPrt(currCell);
                 // Add cell to the list of all explored cells
                 exploredCells.add(currCell);
-                exploredPath.add(currCell);
 
                 /**
                  * 1. Find the direction from which the first cell (entrance) 
@@ -74,7 +75,37 @@ public class WallFollowerSolver implements MazeSolver {
                             }
                     }                        
                 }
-
+                
+                /**
+                 * Tunnel Entrance
+                 * If the current cell is a tunnel entrance, make sure we follow
+                 * the tunnel rather than backtracking.
+                 * The next cell will be the cell at the other end of the tunnel
+                 * Setting the tunnelExit variable ensures that the tunnel is not
+                 * followed back to the entrance on exit. 
+                 */
+                if(!tunnelExit && currCell.tunnelTo != null) {
+                    // Mark next cell as the cell at the other end of the tunnel
+                    currCell = currCell.tunnelTo;
+                    // Set this boolean to ensure the solver knows we are coming
+                    // out of a tunnel
+                    tunnelExit = true;
+                    continue;
+                }
+                /**
+                 * Tunnel Exit
+                 * If the tunnelExit variable is true, it means we have just exited
+                 * from a tunnel. 
+                 * - This variable was set to prevent the solver from going back
+                 * to the entrance from the exit. 
+                 * - Once the exit has been cleared:
+                 * Reset this variable to false to ensure that all future tunnels
+                 * will be entered.
+                 */
+                else {
+                    tunnelExit = false;
+                }
+                
                 /**
                  * 2. Find an opening to travel through (i.e "following a wall")
                  * - Iterate through all directions (360 degrees), but leaving the 
@@ -105,7 +136,9 @@ public class WallFollowerSolver implements MazeSolver {
                                 if(currCell.equals(mazeExit)) {
                                     maze.drawFtPrt(currCell);
                                     exploredCells.add(currCell);
-                                    exploredPath.add(currCell);                                    
+                                    
+                                    // If solver has reached the exit, mark as solved
+                                    solved = true;
                                 }
                 
                                 // The entrance for the new cell is the opposite direction of travel
@@ -125,49 +158,7 @@ public class WallFollowerSolver implements MazeSolver {
          */
 	@Override
 	public boolean isSolved() {
-                /**
-                 * If there are no valid entrance and exit to the maze, the maze
-                 * is not solved.
-                 */
-                if (mazeEntrance == null || mazeExit == null) {
-                    return false;
-                }
-                /**
-                 * If the first cell visited is not the entrance, the maze is
-                 * not solved.
-                 */
-                if (!exploredPath.peek().equals(mazeEntrance)) {
-                    return false;
-                }
-                /**
-                 * Check if each cell is able to validly visit the next cell
-                 */
-                Cell currCell = null;
-                Cell nextCell = null;
-                while (exploredPath.size() > 0) {
-                    currCell = exploredPath.pop();
-                    nextCell = exploredPath.peek();
-                    // Check if it is possible to traverse from current cell to the next
-                    if(currCell != null && nextCell != null) {
-                        boolean valid = false;
-                        // Iterate through all directions
-                        for (int i=0; i<NUM_DIR; i++) {
-                            // If neighbour is found, check if there is a wall present
-                            if(currCell.neigh[i] == nextCell) {
-                                if (!currCell.wall[i].present) {
-                                    valid = true;
-                                }
-                            }                                  
-                        }
-                        if (!valid) {
-                            return false;
-                        }
-                    }
-                }
-                if (!currCell.equals(mazeExit)) {
-                    return false;
-                }
-		return true;
+            return solved;
 	} // end if isSolved()
     
 
