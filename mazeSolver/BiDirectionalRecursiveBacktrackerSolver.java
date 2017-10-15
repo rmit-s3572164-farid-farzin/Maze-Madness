@@ -293,7 +293,8 @@ System.out.println(e);
 							unVisitedNeighs1++;
 						}
 					}else{ //if is tunnel entrance
-						if(cell.tunnelTo.neigh[i]!=null && !visited1[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
+						if(cell.tunnelTo.neigh[i]!=null && 
+								!visited1[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
 								&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
 							unvisitedneighbours[unVisitedNeighs1]=i;
 							unVisitedNeighs1++;
@@ -301,7 +302,8 @@ System.out.println(e);
 					}
 				} else
 				//if this neighbor is not null and is not marked as visited then pick the index and count 
-				//as unvisited neighbour. there is no difference between tunnel and normal maze to count unvisited neighbours
+				//as unvisited neighbour. there is no difference between tunnel and normal maze to count 
+				//unvisited neighbours
 				if(cell.neigh[i]!=null && !visited1[cell.neigh[i].r][cell.neigh[i].c]
 						&& !maze.map[cell.r][cell.c].wall[i].present){
 					unvisitedneighbours[unVisitedNeighs1]=i;
@@ -421,7 +423,8 @@ System.out.println(e);
 							unVisitedNeighs2++;
 						}
 					}else{ //if is tunnel entrance
-						if(cell.tunnelTo.neigh[i]!=null && !visited2[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
+						if(cell.tunnelTo.neigh[i]!=null && 
+								!visited2[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
 								&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
 							unvisitedneighbours[unVisitedNeighs2]=i;
 							unVisitedNeighs2++;
@@ -429,7 +432,8 @@ System.out.println(e);
 					}
 				} else
 				//if this neighbor is not null and is not marked as visited then pick the index and count 
-				//as unvisited neighbour. there is no difference between tunnel and normal maze to count unvisited neighbours
+				//as unvisited neighbour. there is no difference between tunnel and normal maze to count
+				// unvisited neighbours
 				if(cell.neigh[i]!=null && !visited2[cell.neigh[i].r][cell.neigh[i].c]
 						&& !maze.map[cell.r][cell.c].wall[i].present){
 					unvisitedneighbours[unVisitedNeighs2]=i;
