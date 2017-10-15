@@ -12,7 +12,27 @@ import maze.Cell;
 import maze.Maze;
 
 /**
- * Implements the BiDirectional recursive backtracking maze solving algorithm.
+ * <bold>Bidirectional Recursive Backtracker</bold>
+ * This solver performs DFS (Depth First Search) searches starting at
+ *  both the entrance and exit. When starting at the entrance of the 
+ *  maze, the solver will initially randomly choose an adjacent 
+ *  unvisited cell. It moves to that cell (which is the current front
+ *  for DFS starting at the entrance), update its visit status, then 
+ *  selects another random unvisited neighbour. It continues this process 
+ *  until it hits a deadend (no unvisited neighbours), then it backtracks
+ *  to a previous cell that has an unvisited neighbour. Randomly select 
+ *  one of the unvisited neighbour and repeat process until we reached the 
+ *  exit (this is always possible for a perfect maze). The path from 
+ *  entrance to exit is the solution.
+ *  <p>
+ *  When the two DFS fronts first meet, the path from the entrance to the point
+ *  they meet, and the path from the exit to the meeting point forms the two 
+ *  halves of a shortest path (in terms of cell visited) from entrance to exit.
+ *  Combine these paths to get the final path solution.
+ *  
+ *  @author Farid Farzin
+ *  @version %I%, %G%
+ *  @since 1.0
  */
 public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 	
@@ -53,6 +73,30 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 	boolean tunnelExit2;
 	
 	@Override
+	/***
+	 * Maze constructor is responsible to run the whole algorithm
+	 * to solve mazes. Components are as below:
+	 * <ul>
+	 * <li>visited maze to reflect which cells are visited. @see visited1 and @see visited2
+	 * <li> @see stack1  and @see stack2 to save the paths of solvers
+	 * <li> @see unVisitedNeighs1 and unVisitedNeighs2 to list all unvisited neighbours of current cell
+	 * <li> @see direction1 and direction2 to indicate the new direction to next neighbour
+	 * <li> @see allVisited1 and @see allVisited2 to indicate whether all cells in the maze are visited
+	 * <li> @see enteranceFront and exitFront to save the DFS fronts.
+	 * <li> In a case the maze is tunnel @see tunnels1 and @see tunnels2 will save the tunnels cells
+	 * <li> @see tunnelExit1 and @see tunnelExit2 indicate whether we have exited from a tunnel.
+	 * <li> @see isSolved announce if the maze is solved and two paths reach each other.
+	 * <li> @see flipflop: this variable is very important as it allows both paths to go ahead simultaneously 
+	 * <ul>
+	 * <p>
+	 * Solver sequence is as below:
+	 * <ul>
+	 * <li>We pick enterance and exit as starting points and mark them as visited.
+	 * <li>run DFSR to visit unvisited cells and recursively backtrack if there is no unvisited neighbour around.
+	 * <li>If both paths hit each other algorithm is stopped and returns maze is solved.
+	 * <ul> 
+	 * <p>
+	 */
 	public void solveMaze(Maze maze) {
 		try {
 		this.maze = maze;
@@ -99,16 +143,28 @@ System.out.println(e);
 }
 	} // end of solveMaze()
 
+	/***
+	 * In the case maze is solved this method returns true to maze tester
+	 */
 	@Override
 	public boolean isSolved() {
 		return isSolved;
 	} // end if isSolved()
 
+	/***
+	 * cellsExplored counts up all visited cells until maze is solved
+	 */
 	@Override
 	public int cellsExplored() {
 		return cellsExplored;
 	} // end of cellsExplored()
 	
+	/***
+	 * Since solving the maze start at both enterance and exit points then these 
+	 * cells are marked as visited. formula to calculate visited cell in hex type is different 
+	 * from other types
+	 * @see pickStartingCell()
+	 */
 	private void pickStartingCell(){
 		cellsExplored++;
 		//Randomly pick a starting cell
@@ -129,8 +185,20 @@ System.out.println(e);
 
 	/**
 	 * Depth First Search Recursive algorithm is used to visit all 
-	 * Unvisited cells and recursively backtrack to find another unvisited cell
-	 * @param startcell
+	 * Unvisited cells and recursively backtrack to find another unvisited cell.
+	 * <p>
+	 * @see dfsr() always check the flip flop and decides which paths should be followed as per flip flop 
+	 * status. 
+	 * <p>
+	 * New cell is checked in @see pickUnvisitedNeighStart(visited cell) and if visited cell in previous 
+	 * round is different from the path front part 1 will work: there is an unvisited neighbour 
+	 * around so new cell will be marked as visited cell and new path front.
+	 * <p>
+	 *  If there is no unvisited cell so visited cell equal path front and means we have to 
+	 *  back track the cell. So we pull one cell from stack at a time and check whether there is
+	 *  any unvisited neighbour around.
+	 *  <p>
+	 *  After each step we compare the path with other path to see is they hit each other 
 	 */
 	private void dfsr(){
 		//pick a random unvisited cell from start and end points
@@ -138,6 +206,7 @@ System.out.println(e);
 			while(!isSolved && (allVisited1<mazeSize || allVisited2<mazeSize)){
 			//flip flop helps to check cells from start and end point one by one 
 			if(flipflop){ //flip flop check the start point
+				//Part 1
 				// continue picking unvisited neighbour until there is no more unvisited neighbor
 				if(enteranceFront!=visitNeigh1){
 					visitNeigh1 = enteranceFront;
@@ -186,11 +255,17 @@ System.out.println(e);
 		}		
 	}
 
-	/***
-	 * Pick a random unvisited cell
-	 * @param cell
-	 * @return
-	 */
+/***
+ * To see unvisited neighbour around path front what we do is to look around and pick all the unvisited
+ * neighbours. From there we pick a random neighbour from unvisited neighbours. If there is no unvisited
+ * neighbour then we return the cell as output. Unvisited neighbours are the ones which have no wall with
+ * path front, are not null and unvisited.
+ * <p> 
+ * If the maze is tunnel and the path front is indicating a tunnel then we mark that 
+ * tunnel entrance and the exit as visited and push both cells into stack to draw the path. Below method is for entrance path
+ * @param cell current path front cell
+ * @return unvisited cell or the current cell if there is no unvisited neighbour.
+ */
 	private Cell pickUnvisitedNeighStart(Cell cell){
 		int cellTotalNeighs = cell.neigh.length;
 		int[] unvisitedneighbours=new int[cellTotalNeighs];
@@ -236,7 +311,6 @@ System.out.println(e);
 		}
 		//if there is no unvisited neighbour around the cell then return
 		if(unVisitedNeighs1==0){
-			System.out.println("Enter: There is no unvisted neighbor around this cell "+cell.r+", "+cell.c);
 			return cell;
 		} else {		//otherwise go to pick the unvisited neighbour
 			int index = new Random().nextInt(unVisitedNeighs1);
@@ -305,15 +379,20 @@ System.out.println(e);
 				allVisited1++;
 			}
 		}
-		System.out.println("Enter: "+cell.r+", "+cell.c);
 		maze.drawFtPrt(cell);
 		return cell;
 	}
 	
-	/**
-	 * Pick an unvisited cell from exit point
-	 * @param cell
-	 * @return
+	/***
+	 * To see unvisited neighbour around path front what we do is to look around and pick all the unvisited
+	 * neighbours. From there we pick a random neighbour from unvisited neighbours. If there is no unvisited
+	 * neighbour then we return the cell as output. Unvisited neighbours are the ones which have no wall with
+	 * path front, are not null and unvisited.
+	 * <p> 
+	 * If the maze is tunnel and the path front is indicating a tunnel then we mark that 
+	 * tunnel entrance and the exit as visited and push both cells into stack to draw the path. Below method is for exit path
+	 * @param cell current path front cell
+	 * @return unvisited cell or the current cell if there is no unvisited neighbour.
 	 */
 	private Cell pickUnvisitedNeighEnd(Cell cell){
 		int cellTotalNeighs = cell.neigh.length;
@@ -360,7 +439,6 @@ System.out.println(e);
 		}
 		//if there is no unvisited neighbour around the cell then return
 		if(unVisitedNeighs2==0){
-			System.out.println("Exit: There is no unvisted neighbor around this cell "+cell.r+", "+cell.c);
 			return cell;
 		} else {		//otherwise go to pick the unvisited neighbour
 			int index = new Random().nextInt(unVisitedNeighs2);
@@ -429,7 +507,6 @@ System.out.println(e);
 				allVisited2++;
 			}
 		}
-		System.out.println("exit: "+cell.r+", "+cell.c);
 		maze.drawFtPrt(cell);
 		return cell;
 	}
