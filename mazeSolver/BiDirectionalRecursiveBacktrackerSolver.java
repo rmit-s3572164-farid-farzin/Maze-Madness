@@ -3,11 +3,6 @@ package mazeSolver;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Stack;
-
-import javax.xml.ws.Endpoint;
-
-import com.sun.xml.internal.ws.server.EndpointFactory;
-
 import maze.Cell;
 import maze.Maze;
 
