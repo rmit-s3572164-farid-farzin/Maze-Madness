@@ -5,7 +5,26 @@ import java.util.Random;
 import java.util.Stack;
 import maze.Cell;
 import maze.Maze;
-
+/***
+ * <bold>Recursive Backtracker Generator
+ * This generator uses the DFS principle to generate mazes. Starting 
+ * with a maze where all walls are present, i.e., between every cell
+ * is a wall, it uses the following procedure to generate a maze:
+ * <ul>
+ * <li>Randomly pick a starting cell.
+ * <li>Pick a random unvisited neighbouring cell and move to that neighbour. 
+ * In the process, carve a path (i.e, remove the wall) between the cells.
+ * <li>Continue this process until we reach a cell that has no unvisited neighbours. 
+ * In that case, backtrack one cell at a time, until we backtracked to a cell that 
+ * has unvisited neighbours. Repeat step 2.
+ * <li>When there are no more unvisited neighbours for all cells, then every cell 
+ * would have been visited and we have generated a perfect maze.
+ * <ul>
+ * 
+ *  @author Farid Farzin
+ *  @version %I%, %G%
+ *  @since 1.0
+ */
 public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
 	private Maze maze;
@@ -20,9 +39,31 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 	boolean endTrack;
 	HashSet<Cell> tunnels;
 
+	/***
+	 * @see generateMaze(Maze maze) is responsible to run the whole algorithm
+	 * to generate mazes. Components are as below:
+	 * <ul>
+	 * <li> @see maze is the maze selected by user.
+	 * <li> @see stack saves the path that algorithm has passed.
+	 * <li> @see visited[][] contains the cells that have been visited.
+	 * <li> @see mazeRSize and @see mazeCSize in order are maze row size and column size.
+	 * <li> @see unVisitedNeighs keeps number of unvisited neighbours around current vistited
+	 * cell.  
+	 * <li> @see direction shows the way path finder will go next step.
+	 * <li> @see allVisited counts number of visited cells up to now.
+	 * <li> @see mazeSizewill give number of cells in a maze.
+	 * <li> @see endTrack indicates current visited cell does not have any unvisited neighbour.
+	 * <li> @see tunnels keeps tunnel cells 
+	 * <ul>
+	 * <p>
+	 * For the start we pick a random cell from the maze and we send the cell to a Depth First Search 
+	 * Recursive algorithm to continue the generate the maze. 
+	 * 
+	 * @param maze Receives the maze defined by user
+	 */
 	@Override
 	public void generateMaze(Maze maze) {
-		
+
 		this.maze = maze;
 		allVisited =0;
 		stack = new Stack<Cell>();
@@ -31,8 +72,8 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		mazeSize =mazeRSize*mazeCSize;
 		visited = new boolean[mazeRSize][mazeCSize];
 		//if the maze is tunnel find all tunnels cells
-		if(maze.type==maze.TUNNEL){
-			tunnels  = new HashSet();
+		if(maze.type==Maze.TUNNEL){
+			tunnels  = new HashSet<Cell>();
 			for(int i=0; i<mazeRSize;i++){
 				for(int j=0;j<mazeCSize;j++){
 					if(maze.map[i][j].tunnelTo!=null){
@@ -48,7 +89,18 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
 	/**
 	 * Depth First Search Recursive algorithm is used to visit all 
-	 * Unvisited cells and recursively backtrack to find another unvisited cell
+	 * Unvisited cells and recursively backtrack to find another unvisited cell. 
+	 * <ul>
+	 * <li>At each start we send the visited cell to @see pickUnvisitedNeighbour(visitNeigh) 
+	 * in order to return an unvisited neighbour or inform about no more unvisited neighbour.
+	 * <li>Second step is to pick unvisited neighbours until there is no more unvisited neighbour.
+	 * At each round we push the cell to a stack so that we record the path.
+	 * <li> If the returned value from @see pickUnvisitedNeighbour(visitNeigh) equals the input
+	 * we through last pushed cell from stack which the cell with no unvisited neighbour.
+	 * Then we pop the next cell and back track in to @see dfsr(Cell cell).
+	 * <li> We recursively continue the process until @see allVisited quals or greater than 
+	 * @see mazeSize. In this case the maze is perfectly genetrated.
+	 * 
 	 * @param cell
 	 */
 	private void dfsr(Cell cell){
@@ -68,46 +120,62 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 				stack.pop();
 				endTrack=true;
 			}
-			if(!stack.isEmpty())
+			if(!stack.isEmpty()){
 				cell = stack.pop();
+			}
+
 			//continue backtracking until all cells are visited
 			if( allVisited<mazeSize)
 				dfsr(cell);
+
 		} catch (Exception e) {
 			System.out.println(e);
 		}		
 	}
 
 	/***
-	 * To start the maze firstly pick a random cell
-	 * @return
+	 * @see pickStartingCell() picks a random cell from the maze. This cell is marked 
+	 * as visited.
+	 * 
+	 * @return starting cell
 	 */
 	private Cell pickStartingCell(){
 		//Randomly pick a starting cell
 		int r=0;
 		int c=0;
 		Cell startCell=null;
+
 		while (startCell==null || visited[startCell.r][startCell.c]) {
 			r = new Random().nextInt(mazeRSize);
 			c = new Random().nextInt(mazeCSize);
 			startCell = maze.map[r][c];
 		};
-		if(maze.type!=maze.HEX){
 
+		if(maze.type!=Maze.HEX){
 			visited[startCell.r][startCell.c]=true;
 		}else{
 			visited[startCell.r][startCell.c-(startCell.r+1)/2]=true;
 		}
+
 		allVisited++;
-		System.out.println(startCell.r+", "+startCell.c);
 
 		return startCell;
 	}
 
 	/***
-	 * Pick a random unvisited cell
-	 * @param cell
-	 * @return
+	 * @see pickUnvisitedNeighbour(Cell cell) has several staps as below:
+	 * <ul>
+	 * <li>First of all we look around the cell and find direction to all
+	 * unvisited neighbours.
+	 * <li>Then we randomly pick a direction from the above list.
+	 * <li>Based on maze type we remove the wall toward picked neighbour,
+	 * mark new cell as visited and push it into the stack for tracking purpose.
+	 * <li>If the maze is tunnel both tunnel entrance and exit will be marked as visited
+	 *  and pushed into the stack.
+	 * <ul>
+	 * @param cell current cell
+	 * @return new unvisited neighbour or the current cell in a case there is no further 
+	 * unvisited neighbour
 	 */
 	private Cell pickUnvisitedNeighbour(Cell cell){
 		int cellTotalNeighs = cell.neigh.length;
@@ -118,7 +186,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 
 		// goal is to find all unvisited around the cell
 		for(int i =0;i<cellTotalNeighs;i++){
-			if(maze.type==maze.HEX){
+			if(maze.type==Maze.HEX){
 				//if this neighbor is not null and is not marked as visited then pick the index and count 
 				//as unvisited neighbour
 				if(cell.neigh[i]!=null && !visited[cell.neigh[i].r][cell.neigh[i].c-(cell.neigh[i].r+1)/2]){
@@ -137,14 +205,13 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 		//if there is no unvisited neighbour around the cell then return
 		//otherwise go to pick the unvisited neighbour
 		if(unVisitedNeighs==0){
-			System.out.println("There is no unvisted neighbor around this cell...");
 			return cell;
 		} else {
 			int index = new Random().nextInt(unVisitedNeighs);
 			direction = unvisitedneighbours[index];
 			Cell next = cell.neigh[direction];
 			//check tunnel maze different situations
-			if(maze.type==maze.TUNNEL){
+			if(maze.type==Maze.TUNNEL){
 				if(tunnels.contains(next)){
 					if(!visited[next.r][next.c]){
 						//if probable neighbour is tunnel and it is not visited yet
@@ -194,7 +261,7 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 				//depends on the maze type next cell marked as visited 
 				maze.map[cell.r][cell.c].wall[direction].present=false;
 				cell = next;
-				if(maze.type!=maze.HEX){
+				if(maze.type!=Maze.HEX){
 					visited[cell.r][cell.c]=true;
 				}else{
 					visited[cell.r][cell.c-(cell.r+1)/2]=true;
@@ -204,8 +271,6 @@ public class RecursiveBacktrackerGenerator implements MazeGenerator {
 			}
 		}
 
-		System.out.println(cell.r+", "+cell.c);
-		System.out.println(allVisited+"/"+mazeSize);
 		return cell;
 	}
 } // end of class RecursiveBacktrackerGenerator
