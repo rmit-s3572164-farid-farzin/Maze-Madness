@@ -30,7 +30,7 @@ import maze.Maze;
  *  @since 1.0
  */
 public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
-	
+
 	private Maze maze;
 	Stack<Cell> stack1;
 	Stack<Cell> stack2;
@@ -58,7 +58,7 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 
 	HashSet<Cell> startPath;
 	HashSet<Cell> endPath;
-	
+
 	Cell visitNeigh1;
 	Cell visitNeigh2;
 
@@ -66,10 +66,9 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 	boolean isSolved;
 	boolean tunnelExit1;
 	boolean tunnelExit2;
-	
-	@Override
+
 	/***
-	 * Maze constructor is responsible to run the whole algorithm
+	 * @see solveMaze(Maze maze) is responsible to run the whole algorithm
 	 * to solve mazes. Components are as below:
 	 * <ul>
 	 * <li>visited maze to reflect which cells are visited. @see visited1 and @see visited2
@@ -92,50 +91,51 @@ public class BiDirectionalRecursiveBacktrackerSolver implements MazeSolver {
 	 * <ul> 
 	 * <p>
 	 */
+	@Override
 	public void solveMaze(Maze maze) {
 		try {
-		this.maze = maze;
-		allVisited1 =0;
-		allVisited2 =0;
-		visitNeigh1=null;
-		visitNeigh2=null;
-		isSolved=false;
-		tunnelExit1=false;
-		tunnelExit2=false;
-		stack1 = new Stack<Cell>();
-		stack2 = new Stack<Cell>();
+			this.maze = maze;
+			allVisited1 =0;
+			allVisited2 =0;
+			visitNeigh1=null;
+			visitNeigh2=null;
+			isSolved=false;
+			tunnelExit1=false;
+			tunnelExit2=false;
+			stack1 = new Stack<Cell>();
+			stack2 = new Stack<Cell>();
 
-		mazeCSize = maze.sizeR;
-		mazeRSize = maze.sizeC;
-		mazeSize =mazeRSize*mazeCSize;
-		visited1 = new boolean[mazeRSize][mazeCSize];
-		visited2 = new boolean[mazeRSize][mazeCSize];
+			mazeCSize = maze.sizeR;
+			mazeRSize = maze.sizeC;
+			mazeSize =mazeRSize*mazeCSize;
+			visited1 = new boolean[mazeRSize][mazeCSize];
+			visited2 = new boolean[mazeRSize][mazeCSize];
 
-		//maze pick start points
-		pickStartingCell();
-		startPath  = new HashSet<Cell>();
-		endPath  = new HashSet<Cell>();
-		//find maze tunnels
-		if(maze.type==Maze.TUNNEL){
-			tunnels1  = new HashSet<Cell>();	
-			tunnels2  = new HashSet<Cell>();			
+			//maze pick start points
+			pickStartingCell();
+			startPath  = new HashSet<Cell>();
+			endPath  = new HashSet<Cell>();
+			//find maze tunnels
+			if(maze.type==Maze.TUNNEL){
+				tunnels1  = new HashSet<Cell>();	
+				tunnels2  = new HashSet<Cell>();			
 
-			for(int i=0; i<mazeRSize;i++){
-				for(int j=0;j<mazeCSize;j++){
-					if(maze.map[i][j].tunnelTo!=null){
-						tunnels1.add(maze.map[i][j]);
-						tunnels2.add(maze.map[i][j]);
+				for(int i=0; i<mazeRSize;i++){
+					for(int j=0;j<mazeCSize;j++){
+						if(maze.map[i][j].tunnelTo!=null){
+							tunnels1.add(maze.map[i][j]);
+							tunnels2.add(maze.map[i][j]);
+						}
 					}
 				}
 			}
-		}
-		flipflop = false;
+			flipflop = false;
 
 			dfsr();
 
 		} catch (Exception e) {
-System.out.println(e);
-}
+			System.out.println(e);
+		}
 	} // end of solveMaze()
 
 	/***
@@ -153,7 +153,7 @@ System.out.println(e);
 	public int cellsExplored() {
 		return cellsExplored;
 	} // end of cellsExplored()
-	
+
 	/***
 	 * Since solving the maze start at both enterance and exit points then these 
 	 * cells are marked as visited. formula to calculate visited cell in hex type is different 
@@ -164,8 +164,8 @@ System.out.println(e);
 		cellsExplored++;
 		//Randomly pick a starting cell
 		if(maze.type!=Maze.HEX){
-		visited1[maze.entrance.r][maze.entrance.c]=true;
-		visited2[maze.exit.r][maze.exit.c]=true;
+			visited1[maze.entrance.r][maze.entrance.c]=true;
+			visited2[maze.exit.r][maze.exit.c]=true;
 		}else{
 			visited1[maze.entrance.r][maze.entrance.c-(maze.entrance.r+1)/2]=true;
 			visited2[maze.exit.r][maze.exit.c-(maze.exit.r+1)/2]=true;
@@ -199,49 +199,47 @@ System.out.println(e);
 		//pick a random unvisited cell from start and end points
 		try {
 			while(!isSolved && (allVisited1<mazeSize || allVisited2<mazeSize)){
-			//flip flop helps to check cells from start and end point one by one 
-			if(flipflop){ //flip flop check the start point
-				//Part 1
-				// continue picking unvisited neighbour until there is no more unvisited neighbor
-				if(enteranceFront!=visitNeigh1){
-					visitNeigh1 = enteranceFront;
-					enteranceFront = pickUnvisitedNeighStart(visitNeigh1);
-					startPath.add(enteranceFront);
-					if(endPath.contains(enteranceFront)){
-						isSolved=true;
-						throw new Exception("Maze is solved");
-					}
+				//flip flop helps to check cells from start and end point one by one 
+				if(flipflop){ //flip flop check the start point
+					//Part 1
+					// continue picking unvisited neighbour until there is no more unvisited neighbor
+					if(enteranceFront!=visitNeigh1){
+						visitNeigh1 = enteranceFront;
+						enteranceFront = pickUnvisitedNeighStart(visitNeigh1);
+						startPath.add(enteranceFront);
+						if(endPath.contains(enteranceFront)){
+							isSolved=true;
+						}
 						flipflop=false;					
-				}
-					//if all neighbours are visited then backtraack one step
-				if(enteranceFront==visitNeigh1 && !stack1.isEmpty() && flipflop){
-						enteranceFront = stack1.pop();
-					flipflop=false;
-					//continue backtracking until all cells are visited
-					if( allVisited1<mazeSize)
-						dfsr();
-				}
-			} else{ //flip flop check the end point
-				// continue picking unvisited neighbour until there is no more unvisited neighbor
-				if(exitFront!=visitNeigh2){
-					visitNeigh2 = exitFront;
-					exitFront = pickUnvisitedNeighEnd(visitNeigh2);
-					endPath.add(exitFront);
-					if(startPath.contains(exitFront)){
-						isSolved=true;
-						throw new Exception("Maze is solved");
 					}
-						flipflop=true;
-				}
 					//if all neighbours are visited then backtraack one step
-				if(exitFront==visitNeigh2 && !stack2.isEmpty() && !flipflop){
+					if(enteranceFront==visitNeigh1 && !stack1.isEmpty() && flipflop){
+						enteranceFront = stack1.pop();
+						flipflop=false;
+						//continue backtracking until all cells are visited
+						if( allVisited1<mazeSize)
+							dfsr();
+					}
+				} else{ //flip flop check the end point
+					// continue picking unvisited neighbour until there is no more unvisited neighbor
+					if(exitFront!=visitNeigh2){
+						visitNeigh2 = exitFront;
+						exitFront = pickUnvisitedNeighEnd(visitNeigh2);
+						endPath.add(exitFront);
+						if(startPath.contains(exitFront)){
+							isSolved=true;
+						}
+						flipflop=true;
+					}
+					//if all neighbours are visited then backtraack one step
+					if(exitFront==visitNeigh2 && !stack2.isEmpty() && !flipflop){
 						exitFront = stack2.pop();
-					flipflop=true;
-					//continue backtracking until all cells are visited
-					if( allVisited2<mazeSize)
-						dfsr();
+						flipflop=true;
+						//continue backtracking until all cells are visited
+						if( allVisited2<mazeSize)
+							dfsr();
+					}
 				}
-			}
 			}
 			if(endPath.contains(enteranceFront)||startPath.contains(exitFront))
 				return;
@@ -250,17 +248,17 @@ System.out.println(e);
 		}		
 	}
 
-/***
- * To see unvisited neighbour around path front what we do is to look around and pick all the unvisited
- * neighbours. From there we pick a random neighbour from unvisited neighbours. If there is no unvisited
- * neighbour then we return the cell as output. Unvisited neighbours are the ones which have no wall with
- * path front, are not null and unvisited.
- * <p> 
- * If the maze is tunnel and the path front is indicating a tunnel then we mark that 
- * tunnel entrance and the exit as visited and push both cells into stack to draw the path. Below method is for entrance path
- * @param cell current path front cell
- * @return unvisited cell or the current cell if there is no unvisited neighbour.
- */
+	/***
+	 * To see unvisited neighbour around path front what we do is to look around and pick all the unvisited
+	 * neighbours. From there we pick a random neighbour from unvisited neighbours. If there is no unvisited
+	 * neighbour then we return the cell as output. Unvisited neighbours are the ones which have no wall with
+	 * path front, are not null and unvisited.
+	 * <p> 
+	 * If the maze is tunnel and the path front is indicating a tunnel then we mark that 
+	 * tunnel entrance and the exit as visited and push both cells into stack to draw the path. Below method is for entrance path
+	 * @param cell current path front cell
+	 * @return unvisited cell or the current cell if there is no unvisited neighbour.
+	 */
 	private Cell pickUnvisitedNeighStart(Cell cell){
 		int cellTotalNeighs = cell.neigh.length;
 		int[] unvisitedneighbours=new int[cellTotalNeighs];
@@ -290,20 +288,20 @@ System.out.println(e);
 					}else{ //if is tunnel entrance
 						if(cell.tunnelTo.neigh[i]!=null && 
 								!visited1[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
-								&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
+										&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
 							unvisitedneighbours[unVisitedNeighs1]=i;
 							unVisitedNeighs1++;
 						}
 					}
 				} else
-				//if this neighbor is not null and is not marked as visited then pick the index and count 
-				//as unvisited neighbour. there is no difference between tunnel and normal maze to count 
-				//unvisited neighbours
-				if(cell.neigh[i]!=null && !visited1[cell.neigh[i].r][cell.neigh[i].c]
-						&& !maze.map[cell.r][cell.c].wall[i].present){
-					unvisitedneighbours[unVisitedNeighs1]=i;
-					unVisitedNeighs1++;
-				}
+					//if this neighbor is not null and is not marked as visited then pick the index and count 
+					//as unvisited neighbour. there is no difference between tunnel and normal maze to count 
+					//unvisited neighbours
+					if(cell.neigh[i]!=null && !visited1[cell.neigh[i].r][cell.neigh[i].c]
+							&& !maze.map[cell.r][cell.c].wall[i].present){
+						unvisitedneighbours[unVisitedNeighs1]=i;
+						unVisitedNeighs1++;
+					}
 			}
 		}
 		//if there is no unvisited neighbour around the cell then return
@@ -379,7 +377,7 @@ System.out.println(e);
 		maze.drawFtPrt(cell);
 		return cell;
 	}
-	
+
 	/***
 	 * To see unvisited neighbour around path front what we do is to look around and pick all the unvisited
 	 * neighbours. From there we pick a random neighbour from unvisited neighbours. If there is no unvisited
@@ -420,20 +418,20 @@ System.out.println(e);
 					}else{ //if is tunnel entrance
 						if(cell.tunnelTo.neigh[i]!=null && 
 								!visited2[cell.tunnelTo.neigh[i].r][cell.tunnelTo.neigh[i].c]
-								&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
+										&& !maze.map[cell.tunnelTo.r][cell.tunnelTo.c].wall[i].present){
 							unvisitedneighbours[unVisitedNeighs2]=i;
 							unVisitedNeighs2++;
 						}
 					}
 				} else
-				//if this neighbor is not null and is not marked as visited then pick the index and count 
-				//as unvisited neighbour. there is no difference between tunnel and normal maze to count
-				// unvisited neighbours
-				if(cell.neigh[i]!=null && !visited2[cell.neigh[i].r][cell.neigh[i].c]
-						&& !maze.map[cell.r][cell.c].wall[i].present){
-					unvisitedneighbours[unVisitedNeighs2]=i;
-					unVisitedNeighs2++;
-				}
+					//if this neighbor is not null and is not marked as visited then pick the index and count 
+					//as unvisited neighbour. there is no difference between tunnel and normal maze to count
+					// unvisited neighbours
+					if(cell.neigh[i]!=null && !visited2[cell.neigh[i].r][cell.neigh[i].c]
+							&& !maze.map[cell.r][cell.c].wall[i].present){
+						unvisitedneighbours[unVisitedNeighs2]=i;
+						unVisitedNeighs2++;
+					}
 			}
 		}
 		//if there is no unvisited neighbour around the cell then return
