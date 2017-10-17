@@ -52,7 +52,6 @@ public class GrowingTreeGenerator implements MazeGenerator {
              */
             while(!travelCells.isEmpty()) {
                 // Mark the current cell as visited
-                maze.drawFtPrt(currCell);
                 visitedCells.add(currCell);
 
                 /** 
