@@ -33,6 +33,11 @@ public class GrowingTreeGenerator implements MazeGenerator {
             /**
              * Setup the travel cells - which is the set from which the cells to 
              * travel to next are picked.
+             * 
+             * The travel set is implemented as a stack data type in order to
+             * easily retrieve the last added cell to the data structure in order
+             * to perform strategy 1 cell selection. The nomenclature "travel set"
+             * and "travel stack" are used interchangeably in this implementation.
              */
             Stack<Cell> travelCells = new Stack<>();
             HashSet<Cell> visitedCells = new HashSet<>();
@@ -51,22 +56,22 @@ public class GrowingTreeGenerator implements MazeGenerator {
                 visitedCells.add(currCell);
 
                 /** 
-                 * Treat the threshold as a probability
-                 * Select a random cell from the travel set at a 
-                 * probability specified by the threshold.
+                 * Select a cell to travel to from the travel set
+                 * The method of selection takes two forms:
+                 * 1. Select a random cell from the travel set
+                 * 2. Select the last cell added to the travel set
                  * 
-                 * In all other cases, select the latest cell added to the 
-                 * travel set.
                  */
-                // If the probability falls within the threshold probability - 
+                // 1. Select method #1 based on a probability specified by the threshold value
                 if(new java.util.Random().nextInt((int)(threshold*100.00)) == 0) {
                     // Select a random cell from the travel set
-                    currCell = travelCells.get(new java.util.Random().nextInt(travelCells.size()));
-                    travelCells.remove(currCell);                    
+                    int nextIndex = new java.util.Random().nextInt(travelCells.size());
+                    currCell = travelCells.get(nextIndex);                 
                 }
+                // 2. In all other cases, Select using method #2 (latest cell)
                 else {
-                    // Otherwise pick a cell from the travel set to visit
-                    currCell = travelCells.pop();  
+                    // Pick the last added cell to the travel stack
+                    currCell = travelCells.peek();
                 }
                 
                 // Iterate through all neighbours of the selected cell
@@ -83,6 +88,7 @@ public class GrowingTreeGenerator implements MazeGenerator {
                         }
                     }
                 }
+
                 // Select a random neighbour of the cell to travel to   
                 if(!neighbours.isEmpty()) {
                     // Get all the neighbours of the cell in a random accessible 
@@ -100,9 +106,10 @@ public class GrowingTreeGenerator implements MazeGenerator {
                     currCell.wall[dir].present = false;
                     currCell.neigh[dir].wall[oppoDir[dir]].present = false;
                     
-                    // Add the neighbour to the travel set
-                    travelCells.push(currCell);
+                    // Add the newly selected neighbour to the travel set
                     travelCells.push(currCell.neigh[dir]);
+                    // Mark the newly selected neighbour as visited for future reference
+                    visitedCells.add(currCell.neigh[dir]);
                 }
                 else {
                     // All neighbours have been visited for this cell
